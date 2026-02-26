@@ -2,7 +2,6 @@ import os
 
 import resend
 
-
 def _listing_html(listing: dict) -> str:
     roles_str = ", ".join(listing["matched_roles"])
     return f"""
@@ -18,7 +17,10 @@ def _listing_html(listing: dict) -> str:
 
 
 def send_notification(matches: list[dict], config: dict) -> None:
-    resend.api_key = os.environ["RESEND_API_KEY"]
+    api_key = os.environ.get("RESEND_API_KEY", "")
+    if not api_key:
+        raise EnvironmentError("RESEND_API_KEY is not set or empty")
+    resend.api_key = api_key
     from_addr = os.environ.get("FROM_EMAIL", "onboarding@resend.dev")
 
     count = len(matches)
@@ -47,7 +49,7 @@ def send_notification(matches: list[dict], config: dict) -> None:
     resend.Emails.send(
         {
             "from": from_addr,
-            "to": config["recipient_email"],
+            "to": [config["recipient_email"]],
             "subject": subject,
             "html": html,
         }

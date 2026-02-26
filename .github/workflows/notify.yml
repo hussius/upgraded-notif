@@ -30,6 +30,7 @@ jobs:
         run: python scraper/main.py
 
       - name: Commit updated seen.json
+        if: always()  # persist seen IDs even if the email step failed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

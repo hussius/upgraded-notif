@@ -1,11 +1,13 @@
+import html
 import re
 import requests
 
 API_URL = "https://upgraded.se/wp-json/wp/v2/konsultuppdrag"
 
 
-def strip_html(html: str) -> str:
-    return re.sub(r"<[^>]+>", " ", html).strip()
+def strip_html(raw: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", raw)
+    return html.unescape(text).strip()
 
 
 def fetch_listings(max_pages: int = 10) -> list[dict]:

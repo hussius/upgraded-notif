@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 upgraded-notifs: daily digest of new consulting assignments from upgraded.se.
+
+Usage:
+  python main.py            # normal run
+  python main.py --dry-run  # scrape + analyse, print matches, skip email
 """
 import json
 import sys
@@ -30,7 +34,7 @@ def load_config() -> dict:
     return json.loads(CONFIG_PATH.read_text())
 
 
-def main() -> None:
+def main(dry_run: bool = False) -> None:
     config = load_config()
     roles = config["roles"]
 
@@ -65,13 +69,18 @@ def main() -> None:
         print("No listings matched role criteria — no email sent.")
         return
 
+    if dry_run:
+        print(f"\n[dry-run] Would email {len(matches)} matching listing(s) — skipping send.")
+        return
+
     print(f"\nSending email for {len(matches)} matching listing(s)...")
     send_notification(matches, config)
 
 
 if __name__ == "__main__":
+    dry_run = "--dry-run" in sys.argv
     try:
-        main()
+        main(dry_run=dry_run)
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(1)
