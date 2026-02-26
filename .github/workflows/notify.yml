@@ -28,7 +28,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           OFFENTLIG_API_KEY: ${{ secrets.OFFENTLIG_API_KEY }}
-        run: python scraper/main.py
+        run: cd scraper && python main.py
 
       - name: Commit updated seen.json
         if: always()  # persist seen IDs even if the email step failed
