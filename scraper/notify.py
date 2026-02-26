@@ -1,6 +1,8 @@
 import os
+from collections import defaultdict
 
 import resend
+
 
 def _listing_html(listing: dict) -> str:
     roles_str = ", ".join(listing["matched_roles"])
@@ -16,6 +18,16 @@ def _listing_html(listing: dict) -> str:
 </div>"""
 
 
+def _source_section_html(source: str, listings: list[dict]) -> str:
+    items_html = "\n".join(_listing_html(m) for m in listings)
+    count = len(listings)
+    return f"""
+<h3 style="margin:24px 0 12px 0;padding-bottom:6px;border-bottom:2px solid #e0e0e0;color:#555;">
+  {source} — {count} match{'es' if count != 1 else ''}
+</h3>
+{items_html}"""
+
+
 def send_notification(matches: list[dict], config: dict) -> None:
     api_key = os.environ.get("RESEND_API_KEY", "")
     if not api_key:
@@ -23,26 +35,30 @@ def send_notification(matches: list[dict], config: dict) -> None:
     resend.api_key = api_key
     from_addr = os.environ.get("FROM_EMAIL", "onboarding@resend.dev")
 
-    count = len(matches)
-    subject = f"[upgraded.se] {count} new matching assignment{'s' if count != 1 else ''}"
+    by_source: dict[str, list] = defaultdict(list)
+    for m in matches:
+        by_source[m.get("source", "unknown")].append(m)
 
-    listings_html = "\n".join(_listing_html(m) for m in matches)
+    count = len(matches)
+    sources_str = " + ".join(by_source.keys())
+    subject = f"[{sources_str}] {count} new matching result{'s' if count != 1 else ''}"
+
+    sections_html = "\n".join(
+        _source_section_html(source, listings)
+        for source, listings in by_source.items()
+    )
     watching = ", ".join(config["roles"])
 
     html = f"""<!DOCTYPE html>
 <html>
 <body style="font-family:sans-serif;max-width:620px;margin:40px auto;padding:0 16px;color:#1a1a1a;">
-  <h2 style="margin-bottom:4px;">New consulting assignments</h2>
+  <h2 style="margin-bottom:4px;">New matching results</h2>
   <p style="color:#555;margin-top:0;">
-    {count} new assignment{'s' if count != 1 else ''} on
-    <a href="https://upgraded.se/lediga-uppdrag/">upgraded.se</a>
-    match{'es' if count == 1 else ''} your role criteria.
+    {count} new result{'s' if count != 1 else ''} matched your role criteria.
   </p>
-  {listings_html}
+  {sections_html}
   <hr style="border:none;border-top:1px solid #e0e0e0;margin:24px 0;">
-  <p style="color:#aaa;font-size:12px;margin:0;">
-    Watching: {watching}
-  </p>
+  <p style="color:#aaa;font-size:12px;margin:0;">Watching: {watching}</p>
 </body>
 </html>"""
 

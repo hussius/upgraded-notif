@@ -27,6 +27,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          OFFENTLIG_API_KEY: ${{ secrets.OFFENTLIG_API_KEY }}
         run: python scraper/main.py
 
       - name: Commit updated seen.json
