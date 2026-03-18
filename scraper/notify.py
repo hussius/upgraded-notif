@@ -6,8 +6,12 @@ import resend
 
 def _listing_html(listing: dict) -> str:
     roles_str = ", ".join(listing["matched_roles"])
+    content = listing.get("content", "").strip()
+    if len(content) > 1200:
+        content = content[:1200].rsplit(" ", 1)[0] + "…"
+    content_html = f'<p style="margin:10px 0 0 0;font-size:13px;color:#333;white-space:pre-wrap;">{content}</p>' if content else ""
     return f"""
-<div style="margin-bottom:20px;padding:16px;border:1px solid #e0e0e0;border-radius:8px;font-family:sans-serif;">
+<div style="margin-bottom:24px;padding:16px;border:1px solid #e0e0e0;border-radius:8px;font-family:sans-serif;">
   <h3 style="margin:0 0 6px 0;">
     <a href="{listing['link']}" style="color:#1a1a1a;text-decoration:none;">{listing['title']}</a>
   </h3>
@@ -15,6 +19,7 @@ def _listing_html(listing: dict) -> str:
   <p style="margin:0;font-size:13px;">
     <span style="background:#e8f0fe;color:#1a73e8;padding:2px 8px;border-radius:12px;font-weight:600;">{roles_str}</span>
   </p>
+  {content_html}
 </div>"""
 
 
